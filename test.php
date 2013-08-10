@@ -18,9 +18,18 @@ echo "\n\n\n";
 
 
 echo "ELECTIONS\n";
-echo "----------\n";
+echo "---------\n";
 echo "\n";
 
 print_r($elections);
+
+echo "\n\n\n";
+
+
+echo "VOTING CODES\n";
+echo "------------\n";
+echo "\n";
+
+print_r($votingcodes);
 
 echo "\n\n\n";

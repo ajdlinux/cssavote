@@ -210,7 +210,7 @@ function load_data() {
         $result_candidates = $query->get_result();
         foreach ($result_candidates as $row_result_candidates) {
             try {
-                $election->add_candidate($candidates[$row_result_candidates->candidate_id]);
+                $election->add_candidate($candidates[$row_result_candidates['candidate_id']]);
             } catch (Exception $e) {
                 die('Error adding Candidate to Election');
             }
@@ -227,14 +227,15 @@ function load_data() {
     $votingcodes = array();
     
     foreach ($result as $row) {
-        $votingcode = new VotingCode($row['code'], $row['created'], $row['status']);
+        $votingcode = new VotingCode($row['code'], $row['status'], $row['created'], $row['used']);
         $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "votingcodes_elections WHERE code = ?;");
-        $query->bind_param('s', $voting_code->code);
+        $query->bind_param('s', $votingcode->code);
         $query->execute();
         $result_elections = $query->get_result();
+        
         foreach ($result_elections as $row_result_elections) {
             try {
-                $votingcode->add_election($elections[$row_result_elections->election_id]);
+                $votingcode->add_election($elections[$row_result_elections['election_id']]);
             } catch (Exception $e) {
                 die('Error adding Election to VotingCode');
             }
