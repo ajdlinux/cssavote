@@ -156,20 +156,16 @@ class Vote {
     //
     function cast() {
         global $mysqli, $DB_TABLE_PREFIX;
-        $query = q('INSERT (election_id) INTO ' . $DB_TABLE_PREFIX . 'votes VALUES (?)');
+        $query = q('INSERT INTO ' . $DB_TABLE_PREFIX . 'votes (election_id) VALUES (?)');
         $query->bind_param('i', $this->election_id);
         $query->execute();
-        if (!$query->get_result()) { die($mysqli->error); }
-        
+        // if (!$query->get_result()) { die($mysqli->error); }
         $this->vote_id = $mysqli->insert_id;
         
         foreach ($this->preferences as $preference => $candidate_id) {
-            $query = q('INSERT (vote_id, preference, candidate_id) INTO ' . $DB_TABLE_PREFIX . 'votes_preferences VALUES (?, ?, ?)');
-            $query->bind_param('i', $this->vote_id);
-            $query->bind_param('i', $preference);
-            $query->bind_param('i', $candidate_id);
+            $query = q('INSERT INTO ' . $DB_TABLE_PREFIX . 'votes_preferences (vote_id, preference, candidate_id) VALUES (?, ?, ?)');
+            $query->bind_param('iii', $this->vote_id, $preference, $candidate_id);
             $query->execute();
-            if (!$query->get_result()) { die($mysqli->error); }
         }
     }
 }

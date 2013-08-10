@@ -33,3 +33,13 @@ echo "\n";
 print_r($votingcodes);
 
 echo "\n\n\n";
+
+
+echo "CASTING VOTE!\n\n";
+$votingcode = $votingcodes['CSSAABCDEF'];
+$vote = new Vote(null, 1);
+$vote->add_preference(1, 1);
+$vote->cast();
+
+echo "VOTE CAST!\n";
+echo "\n\n\n";
