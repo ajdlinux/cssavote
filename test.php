@@ -4,7 +4,7 @@ require_once('settings.inc.php');
 require_once('db.inc.php');
 require_once('election.inc.php');
 header('Content-Type: text/plain');
-echo "TRYING TO LOAD DATA\n";
+echo "TRYING TO LOAD DATA\n\n";
 
 load_data();
 
@@ -13,3 +13,14 @@ echo "----------\n";
 echo "\n";
 
 print_r($candidates);
+
+echo "\n\n\n";
+
+
+echo "ELECTIONS\n";
+echo "----------\n";
+echo "\n";
+
+print_r($elections);
+
+echo "\n\n\n";

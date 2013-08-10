@@ -224,10 +224,10 @@ function load_data() {
     $query->execute();
     $result = $query->get_result();
     
-    $voting_codes = array();
+    $votingcodes = array();
     
     foreach ($result as $row) {
-        $voting_code = new VotingCode($row['code'], $row['created'], $row['status']);
+        $votingcode = new VotingCode($row['code'], $row['created'], $row['status']);
         $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "votingcodes_elections WHERE code = ?;");
         $query->bind_param('s', $voting_code->code);
         $query->execute();
