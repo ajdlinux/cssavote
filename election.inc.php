@@ -70,15 +70,16 @@ class VotingCode {
     //
     // Input:
     //    $code - the voting code (string)
+    //    $status - voting code status (enum 'UNUSED', 'IN_USE', 'USED')
     //    $created - time of creation (datetime)
-    //    $status - VOTING STTJGRGRHGUREHGUIREJGIRJGRWIJWUU FIXME TODO
-    //    $used - time FIXME TODO
+    //    $used - time that the voting code is used (datetime)
     //
     // Returns: new VotingCode instance
-    function __construct($code, $created, $status) {
+    function __construct($code, $status, $created, $used) {
         $this->code = $code;
-        $this->created = $created;
         $this->status = $status;
+        $this->created = $created;
+        $this->used = $used;
         $this->elections = array();
     }
     
@@ -96,7 +97,7 @@ class VotingCode {
     // Delete an election.
     //
     // Input:
-    //     $candidate_name - name of candidate
+    //     $election_id - ID of election
     //
     // Returns: nothing
     function delete_election($election_id) {
@@ -104,6 +105,71 @@ class VotingCode {
             if ($election->election_id == $election_id) {
                 unset($this->elections[$index]);
             }
+        }
+    }
+}
+
+
+class Vote {
+    // Create a new Vote instance.
+    //
+    // Input:
+    //    $vote_id - the vote ID (integer) - THIS IS NOT THE VOTING CODE
+    //    $election_id - the election ID (integer)
+    //
+    // Returns: new Vote instance
+    function __construct($vote_id, $election_id) {
+        $this->vote_id = $vote_id;
+        $this->election_id = $election_id;
+        $this->preferences = array();
+    }
+    
+    // Add a preference.
+    //
+    // Input:
+    //    $candidate_id - the candidate ID (integer)
+    //    $preference - the preference number (integer)
+    //    
+    // Returns: true if preference added successfully, false otherwise // TODO: should this be changed to an exception?
+    function add_preference($candidate_id, $preference) {
+        // TODO: check that 0 < $preference <= $num_positions
+        // TODO: check that we're not overwriting an existing preference
+        $this->preferences[$preference] = $candidate_id;
+    }
+    
+    // Remove a preference.
+    //
+    // Input:
+    //    $preference - the preference number (integer)
+    // TODO: implement remove_preference
+    
+    // Check formality.
+    //
+    // Returns: whether vote is formal (boolean)
+    function is_formal() {
+        // TODO: Check that the voter has completed at least $num_positions preferences
+        return true;
+    }
+    
+    // Cast the vote
+    //
+    //
+    function cast() {
+        global $mysqli, $DB_TABLE_PREFIX;
+        $query = q('INSERT (election_id) INTO ' . $DB_TABLE_PREFIX . 'votes VALUES (?)');
+        $query->bind_param('i', $this->election_id);
+        $query->execute();
+        if (!$query->get_result()) { die($mysqli->error); }
+        
+        $this->vote_id = $mysqli->insert_id;
+        
+        foreach ($this->preferences as $preference => $candidate_id) {
+            $query = q('INSERT (vote_id, preference, candidate_id) INTO ' . $DB_TABLE_PREFIX . 'votes_preferences VALUES (?, ?, ?)');
+            $query->bind_param('i', $this->vote_id);
+            $query->bind_param('i', $preference);
+            $query->bind_param('i', $candidate_id);
+            $query->execute();
+            if (!$query->get_result()) { die($mysqli->error); }
         }
     }
 }
@@ -138,7 +204,7 @@ function load_data() {
     
     foreach ($result as $row) {
         $election = Election($row['election_id'], $row['title'], $row['num_positions'], $row['created'], $row['start_time'], $row['end_time']);
-        $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "candidates_elections WHERE election_id = ?;");
+        $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "elections_candidates WHERE election_id = ?;");
         $query->bind_param('i', $election->election_id);
         $query->execute();
         $result_candidates = $query->get_result();
@@ -162,7 +228,7 @@ function load_data() {
     
     foreach ($result as $row) {
         $voting_code = VotingCode($row['code'], $row['created'], $row['status']);
-        $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "elections_votingcodes WHERE code = ?;");
+        $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "votingcodes_elections WHERE code = ?;");
         $query->bind_param('s', $voting_code->code);
         $query->execute();
         $result_elections = $query->get_result();
