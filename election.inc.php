@@ -220,7 +220,7 @@ function load_data() {
     
     
     // Load voting codes
-    $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "voting_codes;");
+    $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "votingcodes;");
     $query->execute();
     $result = $query->get_result();
     
