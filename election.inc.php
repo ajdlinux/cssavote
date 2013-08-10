@@ -8,20 +8,39 @@ require_once('vendor/autoload.php');
 // setup database connections
 Pheasant::setup('mysql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME');
 
+use \Pheasant;
 use \Pheasant\Types;
 
-class Candidate extends \Pheasant\DomainObject
+class Candidate extends DomainObject
 {
     public function properties()
     {
         return array(
             'candidate_id'      => new Types\Integer(11, 'primary auto_increment'),
-            'name'              => new Types\String(255, 'required'),
-        )
+            'name'              => new Types\String(255, 'required')
+        );
     }
+    
+    public function relationships()
+    {
+        return array(
+            'Election'          => Election::hasMany
 }
 
-class Election {
+class Election extends DomainObject
+{
+    public function properties()
+    {
+        return array(
+            'election_id'       => new Types\Integer(11, 'primary auto_increment'),
+            'title'             => new Types\String(255, 'required'),
+            'num_positions'     => new Types\Integer(11, 'required'),
+            'created'           => new Types\DateTime(),
+            'start_time'        => new Types\DateTime(),
+            'end_time'          => new Types\DateTime()
+        );
+    }
+    
     // Create a new Election instance.
     //
     // Input:
