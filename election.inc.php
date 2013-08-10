@@ -190,7 +190,7 @@ function load_data() {
     $candidates = array();
     
     foreach ($result as $row) {
-        $candidate = Candidate($row->candidate_id, $row->name);
+        $candidate = new Candidate($row['candidate_id'], $row['name']);
         $candidates[$candidate->candidate_id] = $candidate;
     }
     
@@ -203,7 +203,7 @@ function load_data() {
     $elections = array();
     
     foreach ($result as $row) {
-        $election = Election($row['election_id'], $row['title'], $row['num_positions'], $row['created'], $row['start_time'], $row['end_time']);
+        $election = new Election($row['election_id'], $row['title'], $row['num_positions'], $row['created'], $row['start_time'], $row['end_time']);
         $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "elections_candidates WHERE election_id = ?;");
         $query->bind_param('i', $election->election_id);
         $query->execute();
@@ -227,7 +227,7 @@ function load_data() {
     $voting_codes = array();
     
     foreach ($result as $row) {
-        $voting_code = VotingCode($row['code'], $row['created'], $row['status']);
+        $voting_code = new VotingCode($row['code'], $row['created'], $row['status']);
         $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "votingcodes_elections WHERE code = ?;");
         $query->bind_param('s', $voting_code->code);
         $query->execute();
