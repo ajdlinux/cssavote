@@ -90,8 +90,8 @@ class VotingCode {
     //
     // Returns: nothing
     //
-    function add_election($election) {
-        $this->elections[] = $election;
+    function add_election($election, $order) {
+        $this->elections[$order] = $election;
     }
     
     // Delete an election.
@@ -135,6 +135,7 @@ class Vote {
         // TODO: check that 0 < $preference <= $num_positions
         // TODO: check that we're not overwriting an existing preference
         $this->preferences[$preference] = $candidate_id;
+        return true;
     }
     
     // Remove a preference.
@@ -147,8 +148,8 @@ class Vote {
     //
     // Returns: whether vote is formal (boolean)
     function is_formal() {
-        // TODO: Check that the voter has completed at least $num_positions preferences
-        return true;
+        global $elections;
+        return count($this->preferences) >= $elections[$this->election_id]->num_positions;
     }
     
     // Cast the vote
@@ -176,7 +177,7 @@ class Vote {
 // Returns: nothing
 function load_data() {
     global $mysqli, $DB_TABLE_PREFIX;
-    global $candidates, $elections, $votingcodes;
+    global $candidates, $elections, $votingcodes, $votes;
     
     // Load candidates
     $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "candidates;");
@@ -231,11 +232,36 @@ function load_data() {
         
         foreach ($result_elections as $row_result_elections) {
             try {
-                $votingcode->add_election($elections[$row_result_elections['election_id']]);
+                $votingcode->add_election($elections[$row_result_elections['election_id']], $row_result_elections['election_order']);
             } catch (Exception $e) {
                 die('Error adding Election to VotingCode');
             }
         }
         $votingcodes[$votingcode->code] = $votingcode;
+    }
+    
+    
+    // Load votes
+    $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "votes;");
+    $query->execute();
+    $result = $query->get_result();
+    
+    $votes = array();
+    
+    foreach ($result as $row) {
+        $vote = new Vote($row['vote_id'], $row['election_id']);
+        $query = q("SELECT * FROM " . $DB_TABLE_PREFIX . "votes_preferences WHERE vote_id = ?;");
+        $query->bind_param('i', $vote->vote_id);
+        $query->execute();
+        $result_preferences = $query->get_result();
+        
+        foreach ($result_preferences as $preference) {
+            try {
+                $vote->add_preference($preference['candidate_id'], $preference['preference']);
+            } catch (Exception $e) {
+                die('Error adding preference to Vote');
+            }
+        }
+        $votes[$row['vote_id']] = $vote;
     }
 }
